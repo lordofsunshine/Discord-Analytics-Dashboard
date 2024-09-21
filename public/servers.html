@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Ваши Discord сервера - Аналитика</title>
+        <link rel="stylesheet" href="/css/styles.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            @media only screen and (max-width: 740px) {
+                h1 {
+                    margin: 0;
+                }
+                .user-info {
+                    margin-bottom: 30px;
+                }
+                .server-grid {
+                    display: block;
+                }
+                .server-card {
+                    margin-bottom: 14px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="servers-container">
+                <h1>Ваши Discord сервера</h1>
+                <div class="user-info" id="user-info">
+                    <img
+                        class="user-avatar"
+                        id="user-avatar"
+                        loading="lazy"
+                        src="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/636e0a6918e57475a843f59f_icon_clyde_black_RGB.svg"
+                        alt="User Avatar"
+                    />
+                    <h2 class="user-nickname" id="user-nickname">
+                        Загрузка...
+                    </h2>
+                    <div class="logout-option" id="logout-option">Выйти?</div>
+                </div>
+            </div>
+            <div id="server-list" class="server-grid"></div>
+        </div>
+        <script src="servers.js"></script>
+    </body>
+</html>

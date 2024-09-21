@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Панель управления - Аналитика</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="/css/manage.css" />
+    </head>
+    <body class="bg-white">
+        <div class="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
+            <div class="border-r bg-white lg:block">
+                <div class="flex h-full max-h-screen flex-col gap-2">
+                    <div class="flex h-[60px] items-center border-b px-6">
+                        <a
+                            class="flex items-center gap-2 font-semibold"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 14 14"
+                            >
+                                <path
+                                    fill="currentColor"
+                                    fill-rule="evenodd"
+                                    d="M6.36.525a1 1 0 0 0-.207.226L.353 9.43a1 1 0 0 0 .42 1.466l5.586 2.528V.524Zm1.25 12.9l5.585-2.526a1 1 0 0 0 .42-1.466L7.816.75A1 1 0 0 0 7.61.524z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                            <span>Discord Аналитика</span>
+                        </a>
+                    </div>
+                    <nav
+                        style="margin-bottom: 10px"
+                        class="grid items-start px-4 text-sm font-medium"
+                    >
+                        <a
+                            id="overview-link"
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 bg-gray-100"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="h-4 w-4"
+                            >
+                                <path
+                                    d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                                ></path>
+                                <polyline
+                                    points="9 22 9 12 15 12 15 22"
+                                ></polyline>
+                            </svg>
+                            Обзор
+                        </a>
+                        <a
+                            id="roles-link"
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="h-4 w-4"
+                            >
+                                <path
+                                    d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                ></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Роли & Разрешения
+                        </a>
+                        <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 disabled text-gray-500 transition-all"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="h-4 w-4"
+                            >
+                                <path
+                                    d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                                ></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Активность пользователей
+                        </a>
+                        <a
+                            class="flex items-center gap-3 rounded-lg disabled px-3 py-2 text-gray-500 transition-all"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="h-4 w-4"
+                            >
+                                <path d="M12 20V10"></path>
+                                <path d="M18 20V4"></path>
+                                <path d="M6 20v-4"></path>
+                            </svg>
+                            Рост сервера
+                        </a>
+                        <a
+                            class="flex items-center gap-3 rounded-lg disabled px-3 py-2 text-gray-500 transition-all"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="h-4 w-4"
+                            >
+                                <path
+                                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                                ></path>
+                            </svg>
+                            Использование каналов
+                        </a>
+                        <a
+                            class="flex items-center gap-3 rounded-lg disabled px-3 py-2 text-gray-500 transition-all"
+                            href="#"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="h-4 w-4"
+                            >
+                                <path
+                                    d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                                ></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <line x1="10" y1="9" x2="8" y2="9"></line>
+                            </svg>
+                            Анализ контента
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <header
+                    class="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-white px-6"
+                >
+                    <div class="w-full flex-1">
+                        <form>
+                            <div class="relative">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+                                >
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                                <input
+                                    id="search-input"
+                                    class="flex h-10 rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full bg-white shadow-none appearance-none pl-8 md:w-2/3 lg:w-1/3"
+                                    placeholder="Поиск по дате, по пользователю, по каналу, по роли..."
+                                    type="search"
+                                />
+                            </div>
+                        </form>
+                    </div>
+                    <button
+                        class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground rounded-full border w-8 h-8"
+                        type="button"
+                        id="user-menu-button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
+                        <img
+                            loading="lazy"
+                            id="user-avatar"
+                            src="https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png"
+                            width="32"
+                            height="32"
+                            class="rounded-full"
+                            alt="Avatar"
+                            style="aspect-ratio: 32 / 32; object-fit: cover"
+                        />
+                    </button>
+                </header>
+                <main id="main-content" class="flex-1 overflow-auto p-4">
+                    <div
+                        id="error-message"
+                        class="text-red-500 font-bold text-center mt-4"
+                        style="display: none"
+                    ></div>
+                    <div id="overview-content" class="section-transition">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="manage-header">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="18"
+                                            height="18"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                fill="currentColor"
+                                                d="M7 17h2v-5H7zm8 0h2V7h-2zm-4 0h2v-3h-2zm0-5h2v-2h-2zm-6 9q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm0-2h14V5H5zM5 5v14z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <h1
+                                        id="server-title"
+                                        class="font-semibold text-lg md:text-xl"
+                                    >
+                                        Discord Аналитика
+                                    </h1>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <button
+                                    id="today"
+                                    class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-100 hover:text-gray-900 h-9 rounded-md px-3"
+                                >
+                                    Сегодня
+                                </button>
+                                <button
+                                    id="this-month"
+                                    class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-100 hover:text-gray-900 h-9 rounded-md px-3"
+                                >
+                                    За месяц
+                                </button>
+                                <div
+                                    id="custom-date-picker"
+                                    class="relative inline-block"
+                                >
+                                    <input
+                                        id="custom-date-input"
+                                        type="date"
+                                        placeholder="Select date"
+                                        class="flex h-9 rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div class="rounded-lg border bg-white shadow-sm">
+                                <div class="p-6">
+                                    <h3 class="text-lg stats font-semibold">
+                                        Активность каналов
+                                        <div
+                                            class="loader"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </h3>
+                                    <div
+                                        class="mt-2 text-3xl font-bold"
+                                        id="most-active-channel"
+                                    >
+                                        Загрузка...
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas
+                                            id="channel-engagement-chart"
+                                        ></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-lg border bg-white shadow-sm">
+                                <div class="p-6">
+                                    <h3 class="text-lg stats font-semibold">
+                                        Активные пользователи
+                                        <div
+                                            class="loader"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </h3>
+                                    <div class="mt-2 text-3xl font-bold">
+                                        Топ 10
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="users-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-lg border bg-white shadow-sm">
+                                <div class="p-6">
+                                    <h3 class="text-lg stats font-semibold">
+                                        Часы пиковой активности
+                                        <div
+                                            class="loader"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </h3>
+                                    <div
+                                        class="mt-2 text-3xl font-bold"
+                                        id="peak-hours"
+                                    >
+                                        12PM - 8PM
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="activity-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-lg border bg-white shadow-sm">
+                                <div class="p-6">
+                                    <h3 class="text-lg stats font-semibold">
+                                        Рост сервера
+                                        <div
+                                            class="loader"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </h3>
+                                    <div
+                                        class="mt-2 text-3xl font-bold"
+                                        id="member-count"
+                                    >
+                                        0 участников
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="growth-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-lg border bg-white shadow-sm">
+                                <div class="p-6">
+                                    <h3 class="text-lg stats font-semibold">
+                                        Распределение типов сообщений
+                                        <div
+                                            class="loader"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </h3>
+                                    <div class="mt-2 text-3xl font-bold">
+                                        По типу
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas
+                                            id="message-type-chart"
+                                        ></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-lg border bg-white shadow-sm">
+                                <div class="p-6">
+                                    <h3 class="text-lg stats font-semibold">
+                                        Распределение ролей
+                                        <div
+                                            class="loader"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </h3>
+                                    <div class="mt-2 text-3xl font-bold">
+                                        По пользователю
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="roles-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="roles-content"
+                        class="section-transition"
+                        style="display: none"
+                    >
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    class="h-4 w-4"
+                                >
+                                    <path
+                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                    ></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span class="sr-only">Роли & Разрешения</span>
+                            </div>
+                            <h1 class="font-semibold text-lg md:text-xl">
+                                Роли & Разрешения
+                            </h1>
+                        </div>
+                        <div class="grid gap-6 mt-6">
+                            <div
+                                class="rounded-lg border bg-card text-card-foreground shadow-sm"
+                            >
+                                <div class="flex flex-col space-y-1.5 p-6">
+                                    <p
+                                        class="text-sm text-muted-foreground"
+                                        data-id="56"
+                                    >
+                                        Роли
+                                    </p>
+                                    <h3
+                                        class="text-2xl font-semibold leading-none tracking-tight"
+                                    >
+                                        Все роли
+                                    </h3>
+                                </div>
+                                <div class="p-6">
+                                    <div class="relative w-full overflow-auto">
+                                        <table
+                                            class="w-full caption-bottom text-sm"
+                                        >
+                                            <thead class="[&_tr]:border-b">
+                                                <tr
+                                                    class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                                                >
+                                                    <th
+                                                        class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0"
+                                                    >
+                                                        Роль
+                                                    </th>
+                                                    <th
+                                                        class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0"
+                                                    >
+                                                        Участников
+                                                    </th>
+                                                    <th
+                                                        class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0"
+                                                    >
+                                                        Создана
+                                                    </th>
+                                                    <th
+                                                        class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0"
+                                                    >
+                                                        Действия
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody
+                                                id="roles-table-body"
+                                                class="[&_tr:last-child]:border-0"
+                                            ></tbody>
+                                        </table>
+                                        <div
+                                            id="roles-loader"
+                                            class="loader loader-bg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                                            style="display: none"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"
+                                                    opacity="0.5"
+                                                />
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"
+                                                >
+                                                    <animateTransform
+                                                        attributeName="transform"
+                                                        dur="1s"
+                                                        from="0 12 12"
+                                                        repeatCount="indefinite"
+                                                        to="360 12 12"
+                                                        type="rotate"
+                                                    />
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pagination-container" class="mt-4">
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+        <div id="delete-modal" class="modal">
+            <div class="modal-content">
+                <h2 class="text-lg font-semibold mb-4">Подтвердите удаление</h2>
+                <p class="mb-4">Вы уверены, что хотите удалить эту роль?</p>
+                <div class="flex delete-container">
+                    <button
+                        id="cancel-delete"
+                        class="text-gray-800 bg-gray-200 delete-btn hover:bg-gray-300"
+                    >
+                        Отмена
+                    </button>
+                    <button
+                        id="confirm-delete"
+                        class="bg-red-500 text-white delete-btn hover:bg-red-600"
+                    >
+                        Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+        <script src="manage.js"></script>
+    </body>
+</html>
