@@ -1,3 +1,65 @@
+require("dotenv").config();
+
+const validateEnvConfig = () => {
+  const requiredEnvVars = {
+    DISCORD_CLIENT_ID: 'ID клиента Discord',
+    DISCORD_CLIENT_SECRET: 'Секретный ключ клиента Discord',
+    DISCORD_BOT_TOKEN: 'Токен бота Discord',
+    REDIRECT_URI: 'URI перенаправления'
+  };
+
+  const missingVars = [];
+  const emptyVars = [];
+
+  Object.entries(requiredEnvVars).forEach(([varName, description]) => {
+    if (!(varName in process.env)) {
+      missingVars.push(`${varName} (${description})`);
+    } else if (!process.env[varName].trim()) {
+      emptyVars.push(`${varName} (${description})`);
+    }
+  });
+
+  if (process.env.REDIRECT_URI) {
+    try {
+      new URL(process.env.REDIRECT_URI);
+    } catch (e) {
+      emptyVars.push('REDIRECT_URI (Некорректный формат URL)');
+    }
+  }
+
+  if (missingVars.length > 0 || emptyVars.length > 0) {
+    console.error('\n⚠️  Ошибка конфигурации приложения\n');
+    
+    if (missingVars.length > 0) {
+      console.error('Отсутствующие переменные окружения:');
+      missingVars.forEach(variable => console.error(`  • ${variable}`));
+    }
+    
+    if (emptyVars.length > 0) {
+      console.error('\nПустые или некорректные переменные окружения:');
+      emptyVars.forEach(variable => console.error(`  • ${variable}`));
+    }
+
+    console.error('\nПожалуйста, создайте файл .env в корневой директории проекта со следующим содержимым:');
+    console.error(`
+DISCORD_CLIENT_ID=ваш_client_id
+DISCORD_CLIENT_SECRET=ваш_client_secret
+DISCORD_BOT_TOKEN=ваш_bot_token
+REDIRECT_URI=ваш_redirect_uri
+
+Получить эти данные можно в панели разработчика Discord: https://discord.com/developers/applications
+    `);
+
+    process.exit(1);
+  }
+
+  // Выводим сообщение об успешной загрузке конфигурации
+  console.log('✅ Конфигурация приложения загружена успешно\n');
+};
+
+// Запускаем проверку конфигурации перед инициализацией приложения
+validateEnvConfig();
+
 const express = require("express");
 const https = require("https");
 const {
@@ -9,7 +71,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const moment = require("moment");
 const NodeCache = require("node-cache");
-require("dotenv").config();
+const Bottleneck = require('bottleneck');
 
 const app = express();
 const port = 3000;
@@ -31,12 +93,33 @@ client.login(process.env.DISCORD_BOT_TOKEN);
 
 const analyticsCache = new NodeCache({ stdTTL: 300 });
 
+const limiter = new Bottleneck({
+  maxConcurrent: 5,
+  minTime: 200
+});
+
 const isAuthenticated = (req, res, next) => {
   if (req.cookies.discord_access_token) {
     next();
   } else {
     res.redirect("/");
   }
+};
+
+const validateRequest = (req, res, next) => {
+  const token = req.cookies.discord_access_token;
+  if (!token) {
+    return res.status(401).json({ error: "Не авторизован" });
+  }
+  next();
+};
+
+const errorHandler = (err, req, res, next) => {
+  console.error('Ошибка:', err);
+  res.status(500).json({ 
+    error: "Внутренняя ошибка сервера",
+    message: err.message 
+  });
 };
 
 app.get("/", (req, res) => {
@@ -108,9 +191,18 @@ app.get("/api/servers", isAuthenticated, async (req, res) => {
   }
 });
 
-app.get("/api/analytics/:serverId", isAuthenticated, async (req, res) => {
+app.get("/api/analytics/:serverId", validateRequest, async (req, res) => {
   const { serverId } = req.params;
   const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: "Отсутствуют параметры даты" });
+  }
+
+  if (!moment(startDate).isValid() || !moment(endDate).isValid()) {
+    return res.status(400).json({ error: "Неверный формат даты" });
+  }
+
   const cacheKey = `${serverId}_${startDate}_${endDate}`;
 
   let stats = analyticsCache.get(cacheKey);
@@ -353,53 +445,54 @@ async function getServerStats(guild, startDate, endDate) {
   const textChannels = guild.channels.cache.filter(
     (channel) => channel.type === 0,
   );
-  const fetchPromises = [];
 
-  for (const channel of textChannels.values()) {
-    fetchPromises.push(
+  const fetchMessages = async (channel) => {
+    return limiter.schedule(() => 
       channel.messages
         .fetch({ limit: 100, after: startDate.valueOf() })
-        .then((messages) => {
-          messages.forEach((msg) => {
-            if (msg.createdAt > endDate) return;
-            if (msg.author.bot) return;
-
-            const day = moment(msg.createdAt).format("YYYY-MM-DD");
-            stats.messagesPerDay[day] = (stats.messagesPerDay[day] || 0) + 1;
-
-            stats.topActiveUsers[msg.author.username] =
-              (stats.topActiveUsers[msg.author.username] || 0) + 1;
-
-            const hour = msg.createdAt.getHours();
-            stats.activityByHour[hour] = (stats.activityByHour[hour] || 0) + 1;
-
-            stats.activeChannels[channel.name] =
-              (stats.activeChannels[channel.name] || 0) + 1;
-
-            if (msg.attachments.size > 0) {
-              const attachment = msg.attachments.first();
-              if (attachment.contentType?.startsWith("image/")) {
-                stats.messageTypes["Изображения"]++;
-              } else if (attachment.contentType?.startsWith("video/")) {
-                stats.messageTypes["Видео"]++;
-              } else {
-                stats.messageTypes["Файлы"]++;
-              }
-            } else if (msg.content.length > 0) {
-              stats.messageTypes["Текст"]++;
-            }
-          });
+        .catch(error => {
+          console.error(`Не удалось получить сообщения для канала ${channel.name}:`, error);
+          return null;
         })
-        .catch((error) => {
-          console.error(
-            `Ошибка при получении сообщений для канала ${channel.name}:`,
-            error,
-          );
-        }),
     );
-  }
+  };
 
-  await Promise.allSettled(fetchPromises);
+  const fetchPromises = textChannels.map(channel => fetchMessages(channel));
+  const results = await Promise.allSettled(fetchPromises);
+
+  results.forEach(result => {
+    if (result.status === 'fulfilled' && result.value) {
+      result.value.forEach((msg) => {
+        if (msg.createdAt > endDate) return;
+        if (msg.author.bot) return;
+
+        const day = moment(msg.createdAt).format("YYYY-MM-DD");
+        stats.messagesPerDay[day] = (stats.messagesPerDay[day] || 0) + 1;
+
+        stats.topActiveUsers[msg.author.username] =
+          (stats.topActiveUsers[msg.author.username] || 0) + 1;
+
+        const hour = msg.createdAt.getHours();
+        stats.activityByHour[hour] = (stats.activityByHour[hour] || 0) + 1;
+
+        stats.activeChannels[msg.channel.name] =
+          (stats.activeChannels[msg.channel.name] || 0) + 1;
+
+        if (msg.attachments.size > 0) {
+          const attachment = msg.attachments.first();
+          if (attachment.contentType?.startsWith("image/")) {
+            stats.messageTypes["Изображения"]++;
+          } else if (attachment.contentType?.startsWith("video/")) {
+            stats.messageTypes["Видео"]++;
+          } else {
+            stats.messageTypes["Файлы"]++;
+          }
+        } else if (msg.content.length > 0) {
+          stats.messageTypes["Текст"]++;
+        }
+      });
+    }
+  });
 
   const guildMembers = await guild.members.fetch();
   guildMembers.forEach((member) => {
@@ -419,10 +512,23 @@ async function getServerStats(guild, startDate, endDate) {
   return stats;
 }
 
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
 });
 
-app.listen(port, () => {
-  console.log(`Сервер, работающий по адресу http://localhost:${port} запущен!`);
+app.use(errorHandler);
+
+process.on('SIGTERM', () => {
+  console.log('Получен сигнал SIGTERM. Выполняется корректное завершение...');
+  server.close(() => {
+    console.log('Сервер остановлен');
+    process.exit(0);
+  });
+});
+
+const server = app.listen(port, () => {
+  console.log(`Сервер запущен на http://localhost:${port}`);
 });
