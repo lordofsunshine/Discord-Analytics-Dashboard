@@ -27,26 +27,21 @@ cursor: not-allowed !important;
   overflow: auto;
   background-color: rgba(0,0,0,0.4);
   opacity: 0;
-  transition: opacity 0.3s ease;
   display: none
 }
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto;
+  margin: 20% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 300px;
+  max-width: 400px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transform: scale(0.7);
-  transition: transform 0.3s ease;
+  transform: scale(0.9);
+  opacity: 0;
 }
 .modal.show {
-  opacity: 1;
   display: block
-}
-.modal.show .modal-content {
-  transform: scale(1);
 }
 .delete-container {
   align-items: center;
@@ -106,4 +101,52 @@ cursor: not-allowed !important;
   border: 1px solid rgb(59 130 246 / 14%);
   box-shadow: inset 0 0 20px 0px rgb(59 130 246 / 13%);
   color: rgb(59 130 246);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlayFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.bg-gray-100 {
+  color: #000 !important;
+}
+
+.bg-gray-100 svg {
+  stroke: #000 !important;
 }

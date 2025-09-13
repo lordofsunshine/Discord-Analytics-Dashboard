@@ -1,71 +1,69 @@
 require("dotenv").config();
 
 const validateEnvConfig = () => {
-  const requiredEnvVars = {
-    DISCORD_CLIENT_ID: 'ID клиента Discord',
-    DISCORD_CLIENT_SECRET: 'Секретный ключ клиента Discord',
-    DISCORD_BOT_TOKEN: 'Токен бота Discord',
-    REDIRECT_URI: 'URI перенаправления'
-  };
+    const requiredEnvVars = {
+        DISCORD_CLIENT_ID: 'ID клиента Discord',
+        DISCORD_CLIENT_SECRET: 'Секретный ключ клиента Discord',
+        DISCORD_BOT_TOKEN: 'Токен бота Discord',
+        REDIRECT_URI: 'URI перенаправления'
+    };
 
-  const missingVars = [];
-  const emptyVars = [];
+    const missingVars = [];
+    const emptyVars = [];
 
-  Object.entries(requiredEnvVars).forEach(([varName, description]) => {
-    if (!(varName in process.env)) {
-      missingVars.push(`${varName} (${description})`);
-    } else if (!process.env[varName].trim()) {
-      emptyVars.push(`${varName} (${description})`);
-    }
-  });
+    Object.entries(requiredEnvVars).forEach(([varName, description]) => {
+        if (!(varName in process.env)) {
+            missingVars.push(`${varName} (${description})`);
+        } else if (!process.env[varName].trim()) {
+            emptyVars.push(`${varName} (${description})`);
+        }
+    });
 
-  if (process.env.REDIRECT_URI) {
-    try {
-      new URL(process.env.REDIRECT_URI);
-    } catch (e) {
-      emptyVars.push('REDIRECT_URI (Некорректный формат URL)');
-    }
-  }
-
-  if (missingVars.length > 0 || emptyVars.length > 0) {
-    console.error('\n⚠️  Ошибка конфигурации приложения\n');
-    
-    if (missingVars.length > 0) {
-      console.error('Отсутствующие переменные окружения:');
-      missingVars.forEach(variable => console.error(`  • ${variable}`));
-    }
-    
-    if (emptyVars.length > 0) {
-      console.error('\nПустые или некорректные переменные окружения:');
-      emptyVars.forEach(variable => console.error(`  • ${variable}`));
+    if (process.env.REDIRECT_URI) {
+        try {
+            new URL(process.env.REDIRECT_URI);
+        } catch (e) {
+            emptyVars.push('REDIRECT_URI (Некорректный формат URL)');
+        }
     }
 
-    console.error('\nПожалуйста, создайте файл .env в корневой директории проекта со следующим содержимым:');
-    console.error(`
+    if (missingVars.length > 0 || emptyVars.length > 0) {
+        console.error('\n⚠️  Ошибка конфигурации приложения\n');
+
+        if (missingVars.length > 0) {
+            console.error('Отсутствующие переменные окружения:');
+            missingVars.forEach(variable => console.error(`  • ${variable}`));
+        }
+
+        if (emptyVars.length > 0) {
+            console.error('\nПустые или некорректные переменные окружения:');
+            emptyVars.forEach(variable => console.error(`  • ${variable}`));
+        }
+
+        console.error('\nПожалуйста, создайте файл .env в корневой директории проекта со следующим содержимым:');
+        console.error(`
 DISCORD_CLIENT_ID=ваш_client_id
 DISCORD_CLIENT_SECRET=ваш_client_secret
 DISCORD_BOT_TOKEN=ваш_bot_token
-REDIRECT_URI=ваш_redirect_uri
+REDIRECT_URI=ваш_redirect_uri (url/callback)
 
 Получить эти данные можно в панели разработчика Discord: https://discord.com/developers/applications
     `);
 
-    process.exit(1);
-  }
+        process.exit(1);
+    }
 
-  // Выводим сообщение об успешной загрузке конфигурации
-  console.log('✅ Конфигурация приложения загружена успешно\n');
+    console.log('✅ Конфигурация приложения загружена успешно\n');
 };
 
-// Запускаем проверку конфигурации перед инициализацией приложения
 validateEnvConfig();
 
 const express = require("express");
 const https = require("https");
 const {
-  Client,
-  GatewayIntentBits,
-  PermissionsBitField,
+    Client,
+    GatewayIntentBits,
+    PermissionsBitField,
 } = require("discord.js");
 const path = require("path");
 const cookieParser = require("cookie-parser");
@@ -81,454 +79,554 @@ app.use(express.json());
 app.use(cookieParser());
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildPresences,
-  ],
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildPresences,
+    ],
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-const analyticsCache = new NodeCache({ stdTTL: 300 });
+const analyticsCache = new NodeCache({
+    stdTTL: 300
+});
 
 const limiter = new Bottleneck({
-  maxConcurrent: 5,
-  minTime: 200
+    maxConcurrent: 5,
+    minTime: 200
 });
 
 const isAuthenticated = (req, res, next) => {
-  if (req.cookies.discord_access_token) {
-    next();
-  } else {
-    res.redirect("/");
-  }
+    if (req.cookies.discord_access_token) {
+        next();
+    } else {
+        res.redirect("/");
+    }
 };
 
 const validateRequest = (req, res, next) => {
-  const token = req.cookies.discord_access_token;
-  if (!token) {
-    return res.status(401).json({ error: "Не авторизован" });
-  }
-  next();
+    const token = req.cookies.discord_access_token;
+    if (!token) {
+        return res.status(401).json({
+            error: "Не авторизован"
+        });
+    }
+    next();
 };
 
 const errorHandler = (err, req, res, next) => {
-  console.error('Ошибка:', err);
-  res.status(500).json({ 
-    error: "Внутренняя ошибка сервера",
-    message: err.message 
-  });
+    console.error('Ошибка:', err);
+    res.status(500).json({
+        error: "Внутренняя ошибка сервера",
+        message: err.message
+    });
 };
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.get("/servers.html", isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "servers.html"));
+app.get("/servers", isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "servers.html"));
 });
 
-app.get("/manage.html", isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "manage.html"));
+app.get("/manage", isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "manage.html"));
 });
 
 app.get("/api/login", (req, res) => {
-  const authorizeUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
-  res.json({ url: authorizeUrl });
+    const authorizeUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
+    res.json({
+        url: authorizeUrl
+    });
 });
 
 app.get("/callback", async (req, res) => {
-  const { code } = req.query;
-  if (code) {
-    try {
-      const tokenResponse = await exchangeCode(code);
-      res.cookie("discord_access_token", tokenResponse.access_token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-      });
-      res.redirect("/servers.html");
-    } catch (error) {
-      console.error("Ошибка при обмене кодом:", error);
-      res.status(500).send("Не удалось выполнить проверку подлинности");
+    const {
+        code
+    } = req.query;
+    if (code) {
+        try {
+            const tokenResponse = await exchangeCode(code);
+            res.cookie("discord_access_token", tokenResponse.access_token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "strict",
+            });
+            res.redirect("/servers");
+        } catch (error) {
+            console.error("Ошибка при обмене кодом:", error);
+            res.status(500).send("Не удалось выполнить проверку подлинности");
+        }
+    } else {
+        res.status(400).send("Код не указан");
     }
-  } else {
-    res.status(400).send("Код не указан");
-  }
 });
 
 app.get("/api/servers", isAuthenticated, async (req, res) => {
-  const accessToken = req.cookies.discord_access_token;
-  try {
-    const userGuilds = await getUserGuilds(accessToken);
-    const botGuilds = client.guilds.cache.map((guild) => guild.id);
-    const filteredServers = userGuilds.filter((guild) => {
-      const permissions = new PermissionsBitField(BigInt(guild.permissions));
-      return (
-        guild.owner ||
-        permissions.has(PermissionsBitField.Flags.ManageGuild) ||
-        permissions.has(PermissionsBitField.Flags.Administrator)
-      );
-    });
-    const servers = await Promise.all(
-      filteredServers.map(async (guild) => {
-        const botGuild = client.guilds.cache.get(guild.id);
-        return {
-          id: guild.id,
-          name: guild.name,
-          icon: guild.icon,
-          hasBot: botGuilds.includes(guild.id),
-          memberCount: botGuild ? botGuild.memberCount : "N/A",
-        };
-      }),
-    );
-    res.json(servers);
-  } catch (error) {
-    console.error("Ошибка при выборе серверов:", error);
-    res.status(500).json({ error: "Не удалось получить доступ к серверам" });
-  }
+    const accessToken = req.cookies.discord_access_token;
+    try {
+        const userGuilds = await getUserGuilds(accessToken);
+        const botGuilds = client.guilds.cache.map((guild) => guild.id);
+        const filteredServers = userGuilds.filter((guild) => {
+            const permissions = new PermissionsBitField(BigInt(guild.permissions));
+            return (
+                guild.owner ||
+                permissions.has(PermissionsBitField.Flags.ManageGuild) ||
+                permissions.has(PermissionsBitField.Flags.Administrator)
+            );
+        });
+        const servers = await Promise.all(
+            filteredServers.map(async (guild) => {
+                const botGuild = client.guilds.cache.get(guild.id);
+                return {
+                    id: guild.id,
+                    name: guild.name,
+                    icon: guild.icon,
+                    hasBot: botGuilds.includes(guild.id),
+                    memberCount: botGuild ? botGuild.memberCount : "N/A",
+                };
+            }),
+        );
+        res.json(servers);
+    } catch (error) {
+        console.error("Ошибка при выборе серверов:", error);
+        res.status(500).json({
+            error: "Не удалось получить доступ к серверам"
+        });
+    }
 });
 
 app.get("/api/analytics/:serverId", validateRequest, async (req, res) => {
-  const { serverId } = req.params;
-  const { startDate, endDate } = req.query;
+    const {
+        serverId
+    } = req.params;
+    const {
+        startDate,
+        endDate
+    } = req.query;
 
-  if (!startDate || !endDate) {
-    return res.status(400).json({ error: "Отсутствуют параметры даты" });
-  }
+    if (!startDate || !endDate) {
+        return res.status(400).json({
+            error: "Отсутствуют параметры даты"
+        });
+    }
 
-  if (!moment(startDate).isValid() || !moment(endDate).isValid()) {
-    return res.status(400).json({ error: "Неверный формат даты" });
-  }
+    if (!moment(startDate).isValid() || !moment(endDate).isValid()) {
+        return res.status(400).json({
+            error: "Неверный формат даты"
+        });
+    }
 
-  const cacheKey = `${serverId}_${startDate}_${endDate}`;
+    const cacheKey = `${serverId}_${startDate}_${endDate}`;
 
-  let stats = analyticsCache.get(cacheKey);
-  if (stats) {
-    return res.json(stats);
-  }
+    let stats = analyticsCache.get(cacheKey);
+    if (stats) {
+        return res.json(stats);
+    }
 
-  const guild = client.guilds.cache.get(serverId);
-
-  if (!guild) {
-    return res
-      .status(404)
-      .json({ error: "Сервер не найден или бот не является участником." });
-  }
-
-  try {
-    stats = await getServerStats(guild, moment(startDate), moment(endDate));
-    analyticsCache.set(cacheKey, stats);
-    res.json(stats);
-  } catch (error) {
-    console.error("Аналитика выдала ошибку:", error);
-    res.status(500).json({
-      error: "Не удалось получить аналитические данные",
-      details: error.message,
-    });
-  }
-});
-
-app.get("/api/user", isAuthenticated, async (req, res) => {
-  const accessToken = req.cookies.discord_access_token;
-  try {
-    const userData = await getUserData(accessToken);
-    res.json(userData);
-  } catch (error) {
-    console.error("Ошибка при получении пользовательских данных:", error);
-    res
-      .status(500)
-      .json({ error: "Не удалось получить пользовательские данные" });
-  }
-});
-
-app.get("/api/bot-invite", isAuthenticated, (req, res) => {
-  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&permissions=8&scope=bot`;
-  res.json({ url: inviteUrl });
-});
-
-app.post("/api/logout", (req, res) => {
-  res.clearCookie("discord_access_token");
-  res.json({ success: true });
-});
-
-app.get("/api/roles/:serverId", isAuthenticated, async (req, res) => {
-  const { serverId } = req.params;
-  const guild = client.guilds.cache.get(serverId);
-
-  if (!guild) {
-    return res
-      .status(404)
-      .json({ error: "Сервер не найден или бот не является участником" });
-  }
-
-  try {
-    const roles = await guild.roles.fetch();
-    const botMember = guild.members.cache.get(client.user.id);
-    const rolesData = roles
-      .map((role) => ({
-        id: role.id,
-        name: role.name,
-        color: role.hexColor,
-        memberCount: role.members.size,
-        createdAt: role.createdAt,
-        canManage:
-          botMember.roles.highest.comparePositionTo(role) > 0 &&
-          guild.ownerId !== role.id,
-      }))
-      .sort((a, b) => b.position - a.position);
-    res.json(rolesData);
-  } catch (error) {
-    console.error("Ошибка при выборе ролей:", error);
-    res
-      .status(500)
-      .json({ error: "Не удалось получить роли", details: error.message });
-  }
-});
-
-app.delete(
-  "/api/roles/:serverId/:roleId",
-  isAuthenticated,
-  async (req, res) => {
-    const { serverId, roleId } = req.params;
     const guild = client.guilds.cache.get(serverId);
 
     if (!guild) {
-      return res
-        .status(404)
-        .json({ error: "Сервер не найден или бот не является участником" });
+        return res
+            .status(404)
+            .json({
+                error: "Сервер не найден или бот не является участником."
+            });
     }
 
     try {
-      const role = await guild.roles.fetch(roleId);
-      if (!role) {
-        return res.status(404).json({ error: "Роль не найдена" });
-      }
-
-      await role.delete();
-      res.json({ success: true, message: "Роль успешно удалена!" });
+        stats = await getServerStats(guild, moment(startDate), moment(endDate));
+        analyticsCache.set(cacheKey, stats);
+        res.json(stats);
     } catch (error) {
-      console.error("Ошибка при удалении роли:", error);
-      res
-        .status(500)
-        .json({ error: "Не удалось удалить роль", details: error.message });
+        console.error("Аналитика выдала ошибку:", error);
+        res.status(500).json({
+            error: "Не удалось получить аналитические данные",
+            details: error.message,
+        });
     }
-  },
+});
+
+app.get("/api/user", isAuthenticated, async (req, res) => {
+    const accessToken = req.cookies.discord_access_token;
+    try {
+        const userData = await getUserData(accessToken);
+        res.json(userData);
+    } catch (error) {
+        console.error("Ошибка при получении пользовательских данных:", error);
+        res
+            .status(500)
+            .json({
+                error: "Не удалось получить пользовательские данные"
+            });
+    }
+});
+
+app.get("/api/bot-invite", isAuthenticated, (req, res) => {
+    const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&permissions=8&scope=bot`;
+    res.json({
+        url: inviteUrl
+    });
+});
+
+app.post("/api/logout", (req, res) => {
+    res.clearCookie("discord_access_token");
+    res.json({
+        success: true
+    });
+});
+
+app.get("/api/roles/:serverId", isAuthenticated, async (req, res) => {
+    const {
+        serverId
+    } = req.params;
+    const guild = client.guilds.cache.get(serverId);
+
+    if (!guild) {
+        return res
+            .status(404)
+            .json({
+                error: "Сервер не найден или бот не является участником"
+            });
+    }
+
+    try {
+        const roles = await guild.roles.fetch();
+        const botMember = guild.members.cache.get(client.user.id);
+        const rolesData = roles
+            .map((role) => ({
+                id: role.id,
+                name: role.name,
+                color: role.hexColor,
+                memberCount: role.members.size,
+                createdAt: role.createdAt,
+                canManage: botMember.roles.highest.comparePositionTo(role) > 0 &&
+                    guild.ownerId !== role.id,
+            }))
+            .sort((a, b) => b.position - a.position);
+        res.json(rolesData);
+    } catch (error) {
+        console.error("Ошибка при выборе ролей:", error);
+        res
+            .status(500)
+            .json({
+                error: "Не удалось получить роли",
+                details: error.message
+            });
+    }
+});
+
+app.patch(
+    "/api/roles/:serverId/:roleId",
+    isAuthenticated,
+    async (req, res) => {
+        const {
+            serverId,
+            roleId
+        } = req.params;
+        const {
+            name,
+            color
+        } = req.body;
+        const guild = client.guilds.cache.get(serverId);
+
+        if (!guild) {
+            return res
+                .status(404)
+                .json({
+                    error: "Сервер не найден или бот не является участником"
+                });
+        }
+
+        try {
+            const role = await guild.roles.fetch(roleId);
+            if (!role) {
+                return res.status(404).json({
+                    error: "Роль не найдена"
+                });
+            }
+
+            const updateData = {};
+            if (name) updateData.name = name;
+            if (color) updateData.color = color;
+
+            await role.edit(updateData);
+            res.json({
+                success: true,
+                message: "Роль успешно обновлена!"
+            });
+        } catch (error) {
+            console.error("Ошибка при обновлении роли:", error);
+            res
+                .status(500)
+                .json({
+                    error: "Не удалось обновить роль",
+                    details: error.message
+                });
+        }
+    },
+);
+
+app.delete(
+    "/api/roles/:serverId/:roleId",
+    isAuthenticated,
+    async (req, res) => {
+        const {
+            serverId,
+            roleId
+        } = req.params;
+        const guild = client.guilds.cache.get(serverId);
+
+        if (!guild) {
+            return res
+                .status(404)
+                .json({
+                    error: "Сервер не найден или бот не является участником"
+                });
+        }
+
+        try {
+            const role = await guild.roles.fetch(roleId);
+            if (!role) {
+                return res.status(404).json({
+                    error: "Роль не найдена"
+                });
+            }
+
+            await role.delete();
+            res.json({
+                success: true,
+                message: "Роль успешно удалена!"
+            });
+        } catch (error) {
+            console.error("Ошибка при удалении роли:", error);
+            res
+                .status(500)
+                .json({
+                    error: "Не удалось удалить роль",
+                    details: error.message
+                });
+        }
+    },
 );
 
 async function exchangeCode(code) {
-  return new Promise((resolve, reject) => {
-    const data = new URLSearchParams({
-      client_id: process.env.DISCORD_CLIENT_ID,
-      client_secret: process.env.DISCORD_CLIENT_SECRET,
-      grant_type: "authorization_code",
-      code: code,
-      redirect_uri: process.env.REDIRECT_URI,
+    return new Promise((resolve, reject) => {
+        const data = new URLSearchParams({
+            client_id: process.env.DISCORD_CLIENT_ID,
+            client_secret: process.env.DISCORD_CLIENT_SECRET,
+            grant_type: "authorization_code",
+            code: code,
+            redirect_uri: process.env.REDIRECT_URI,
+        });
+
+        const options = {
+            hostname: "discord.com",
+            port: 443,
+            path: "/api/oauth2/token",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        };
+
+        const req = https.request(options, (res) => {
+            let data = "";
+            res.on("data", (chunk) => {
+                data += chunk;
+            });
+            res.on("end", () => {
+                resolve(JSON.parse(data));
+            });
+        });
+
+        req.on("error", (error) => {
+            reject(error);
+        });
+
+        req.write(data.toString());
+        req.end();
     });
-
-    const options = {
-      hostname: "discord.com",
-      port: 443,
-      path: "/api/oauth2/token",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    };
-
-    const req = https.request(options, (res) => {
-      let data = "";
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-      res.on("end", () => {
-        resolve(JSON.parse(data));
-      });
-    });
-
-    req.on("error", (error) => {
-      reject(error);
-    });
-
-    req.write(data.toString());
-    req.end();
-  });
 }
 
 async function getUserGuilds(accessToken) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: "discord.com",
-      port: 443,
-      path: "/api/users/@me/guilds",
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    };
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: "discord.com",
+            port: 443,
+            path: "/api/users/@me/guilds",
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
 
-    const req = https.request(options, (res) => {
-      let data = "";
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-      res.on("end", () => {
-        resolve(JSON.parse(data));
-      });
+        const req = https.request(options, (res) => {
+            let data = "";
+            res.on("data", (chunk) => {
+                data += chunk;
+            });
+            res.on("end", () => {
+                resolve(JSON.parse(data));
+            });
+        });
+
+        req.on("error", (error) => {
+            reject(error);
+        });
+
+        req.end();
     });
-
-    req.on("error", (error) => {
-      reject(error);
-    });
-
-    req.end();
-  });
 }
 
 async function getUserData(accessToken) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: "discord.com",
-      port: 443,
-      path: "/api/users/@me",
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    };
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: "discord.com",
+            port: 443,
+            path: "/api/users/@me",
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
 
-    const req = https.request(options, (res) => {
-      let data = "";
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-      res.on("end", () => {
-        const userData = JSON.parse(data);
-        resolve({
-          id: userData.id,
-          username: userData.username,
-          avatar: userData.avatar
-            ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
-            : null,
+        const req = https.request(options, (res) => {
+            let data = "";
+            res.on("data", (chunk) => {
+                data += chunk;
+            });
+            res.on("end", () => {
+                const userData = JSON.parse(data);
+                resolve({
+                    id: userData.id,
+                    username: userData.username,
+                    avatar: userData.avatar ?
+                        `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png` :
+                        null,
+                });
+            });
         });
-      });
-    });
 
-    req.on("error", (error) => {
-      reject(error);
-    });
+        req.on("error", (error) => {
+            reject(error);
+        });
 
-    req.end();
-  });
+        req.end();
+    });
 }
 
 async function getServerStats(guild, startDate, endDate) {
-  const stats = {
-    messagesPerDay: {},
-    topActiveUsers: {},
-    activityByHour: {},
-    memberGrowth: {},
-    activeChannels: {},
-    rolesDistribution: {},
-    messageTypes: {
-      Текст: 0,
-      Изображения: 0,
-      Видео: 0,
-      Файлы: 0,
-      Голосовые: 0,
-    },
-    serverName: guild.name,
-  };
+    const stats = {
+        messagesPerDay: {},
+        topActiveUsers: {},
+        activityByHour: {},
+        memberGrowth: {},
+        activeChannels: {},
+        rolesDistribution: {},
+        messageTypes: {
+            Текст: 0,
+            Изображения: 0,
+            Видео: 0,
+            Файлы: 0,
+            Голосовые: 0,
+        },
+        serverName: guild.name,
+    };
 
-  const textChannels = guild.channels.cache.filter(
-    (channel) => channel.type === 0,
-  );
-
-  const fetchMessages = async (channel) => {
-    return limiter.schedule(() => 
-      channel.messages
-        .fetch({ limit: 100, after: startDate.valueOf() })
-        .catch(error => {
-          console.error(`Не удалось получить сообщения для канала ${channel.name}:`, error);
-          return null;
-        })
+    const textChannels = guild.channels.cache.filter(
+        (channel) => channel.type === 0,
     );
-  };
 
-  const fetchPromises = textChannels.map(channel => fetchMessages(channel));
-  const results = await Promise.allSettled(fetchPromises);
+    const fetchMessages = async (channel) => {
+        return limiter.schedule(() =>
+            channel.messages
+            .fetch({
+                limit: 100,
+                after: startDate.valueOf()
+            })
+            .catch(error => {
+                console.error(`Не удалось получить сообщения для канала ${channel.name}:`, error);
+                return null;
+            })
+        );
+    };
 
-  results.forEach(result => {
-    if (result.status === 'fulfilled' && result.value) {
-      result.value.forEach((msg) => {
-        if (msg.createdAt > endDate) return;
-        if (msg.author.bot) return;
+    const fetchPromises = textChannels.map(channel => fetchMessages(channel));
+    const results = await Promise.allSettled(fetchPromises);
 
-        const day = moment(msg.createdAt).format("YYYY-MM-DD");
-        stats.messagesPerDay[day] = (stats.messagesPerDay[day] || 0) + 1;
+    results.forEach(result => {
+        if (result.status === 'fulfilled' && result.value) {
+            result.value.forEach((msg) => {
+                if (msg.createdAt > endDate) return;
+                if (msg.author.bot) return;
 
-        stats.topActiveUsers[msg.author.username] =
-          (stats.topActiveUsers[msg.author.username] || 0) + 1;
+                const day = moment(msg.createdAt).format("YYYY-MM-DD");
+                stats.messagesPerDay[day] = (stats.messagesPerDay[day] || 0) + 1;
 
-        const hour = msg.createdAt.getHours();
-        stats.activityByHour[hour] = (stats.activityByHour[hour] || 0) + 1;
+                stats.topActiveUsers[msg.author.username] =
+                    (stats.topActiveUsers[msg.author.username] || 0) + 1;
 
-        stats.activeChannels[msg.channel.name] =
-          (stats.activeChannels[msg.channel.name] || 0) + 1;
+                const hour = msg.createdAt.getHours();
+                stats.activityByHour[hour] = (stats.activityByHour[hour] || 0) + 1;
 
-        if (msg.attachments.size > 0) {
-          const attachment = msg.attachments.first();
-          if (attachment.contentType?.startsWith("image/")) {
-            stats.messageTypes["Изображения"]++;
-          } else if (attachment.contentType?.startsWith("video/")) {
-            stats.messageTypes["Видео"]++;
-          } else {
-            stats.messageTypes["Файлы"]++;
-          }
-        } else if (msg.content.length > 0) {
-          stats.messageTypes["Текст"]++;
+                stats.activeChannels[msg.channel.name] =
+                    (stats.activeChannels[msg.channel.name] || 0) + 1;
+
+                if (msg.attachments.size > 0) {
+                    const attachment = msg.attachments.first();
+                    if (attachment.contentType?.startsWith("image/")) {
+                        stats.messageTypes["Изображения"]++;
+                    } else if (attachment.contentType?.startsWith("video/")) {
+                        stats.messageTypes["Видео"]++;
+                    } else {
+                        stats.messageTypes["Файлы"]++;
+                    }
+                } else if (msg.content.length > 0) {
+                    stats.messageTypes["Текст"]++;
+                }
+            });
         }
-      });
-    }
-  });
+    });
 
-  const guildMembers = await guild.members.fetch();
-  guildMembers.forEach((member) => {
-    if (member.user.bot) return;
-    const joinDay = moment(member.joinedAt).format("YYYY-MM-DD");
-    if (moment(joinDay).isBetween(startDate, endDate, null, "[]")) {
-      stats.memberGrowth[joinDay] = (stats.memberGrowth[joinDay] || 0) + 1;
-    }
-  });
+    const guildMembers = await guild.members.fetch();
+    guildMembers.forEach((member) => {
+        if (member.user.bot) return;
+        const joinDay = moment(member.joinedAt).format("YYYY-MM-DD");
+        if (moment(joinDay).isBetween(startDate, endDate, null, "[]")) {
+            stats.memberGrowth[joinDay] = (stats.memberGrowth[joinDay] || 0) + 1;
+        }
+    });
 
-  guild.roles.cache.forEach((role) => {
-    stats.rolesDistribution[role.name] = role.members.filter(
-      (member) => !member.user.bot,
-    ).size;
-  });
+    guild.roles.cache.forEach((role) => {
+        stats.rolesDistribution[role.name] = role.members.filter(
+            (member) => !member.user.bot,
+        ).size;
+    });
 
-  return stats;
+    return stats;
 }
 
 app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  next();
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
 });
 
 app.use(errorHandler);
 
 process.on('SIGTERM', () => {
-  console.log('Получен сигнал SIGTERM. Выполняется корректное завершение...');
-  server.close(() => {
-    console.log('Сервер остановлен');
-    process.exit(0);
-  });
+    console.log('Получен сигнал SIGTERM. Выполняется корректное завершение...');
+    server.close(() => {
+        console.log('Сервер остановлен');
+        process.exit(0);
+    });
 });
 
 const server = app.listen(port, () => {
-  console.log(`Сервер запущен на http://localhost:${port}`);
+    console.log(`Сервер запущен на http://localhost:${port}`);
 });
